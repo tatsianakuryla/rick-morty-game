@@ -11,6 +11,7 @@
     "scripts": {
         "build": "tsup src/main.ts --format esm --target node20 --dts --clean",
         "dev": "ts-node --esm src/main.ts",
+        "prestart": "npm run build",
         "start": "node dist/main.js",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",

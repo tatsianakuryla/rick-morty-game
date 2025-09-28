@@ -25,12 +25,13 @@ export default [
             '@typescript-eslint/no-unsafe-call': 'error',
             '@typescript-eslint/no-unsafe-member-access': 'error',
             '@typescript-eslint/no-unsafe-argument': 'error',
-
             'no-restricted-syntax': [
                 'error',
-                { selector: 'TSAsExpression', message: 'The "as" assertion is not allowed.' },
+                {
+                    selector: 'TSAsExpression:not(:has(TSTypeReference[typeName.name="const"]))',
+                    message: 'The "as" assertion is not allowed.',
+                },
             ],
-
             '@typescript-eslint/consistent-type-imports': [
                 'warn',
                 { disallowTypeAnnotations: false },
