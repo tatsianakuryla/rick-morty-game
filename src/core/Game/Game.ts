@@ -1,26 +1,16 @@
+import type { GameConfig } from '../../types';
 import { GameState } from '../GameState/GameState';
-import { GameCliArgsParser } from '../../cli/GameCliArgsParser/GameCliArgsParser';
-import { type Morty } from '../../morties/Morty/Morty';
-import { MortyFactories, type MortyType } from '../../morties/mortyRegistry';
+import type { Morty } from '../../morties/Morty/Morty';
+import { MortyFactories } from "../../morties/mortyRegistry";
 
 export class Game {
-    private readonly _morty: Morty;
-    private _state: GameState;
+    public readonly config: GameConfig;
+    public readonly morty: Morty;
+    public readonly state: GameState;
 
-    constructor() {
-        this._state = new GameState(GameCliArgsParser.parse());
-        this._morty = this.createMorty(this._state.mortyType);
-    }
-
-    public get morty(): Morty {
-        return this._morty;
-    }
-
-    private createMorty(mortyType: MortyType): Morty {
-        const morty = MortyFactories[mortyType];
-        if (!morty) {
-            throw new Error(`Morty ${mortyType} not found!`);
-        }
-        return morty();
+    constructor(config: GameConfig) {
+        this.config = config;
+        this.morty = MortyFactories[config.mortyType]();
+        this.state = new GameState();
     }
 }

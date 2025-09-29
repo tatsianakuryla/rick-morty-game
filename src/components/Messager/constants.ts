@@ -1,4 +1,4 @@
-import { MAX_BOXES_QUANTITY, MIN_BOXES_QUANTITY } from '../constants/constants';
+import { MAX_BOXES_QUANTITY, MIN_BOXES_QUANTITY } from '../../constants/constants';
 
 export const DefaultMessage = [
     'Usage:',
