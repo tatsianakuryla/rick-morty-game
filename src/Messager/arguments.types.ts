@@ -1,4 +1,4 @@
-import { type DetailedError } from './constants';
+import type { DetailedError } from '../cli/constants';
 
 export type ArgumentErrors = keyof typeof DetailedError;
 

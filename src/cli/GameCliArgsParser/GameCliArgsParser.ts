@@ -1,12 +1,13 @@
-import { Messenger } from '../Messager/Messenger';
-import type { ArgumentErrors } from '../arguments.types';
+import { Messenger } from '../../Messager/Messenger';
+import type { ArgumentErrors } from '../../Messager/arguments.types';
 import type { GameStartArguments } from '../../types';
 import {
     AllowedMortyPaths,
     MAX_BOXES_QUANTITY,
-    MIN_BOXES_QUANTITY, MortyPathMap,
+    MIN_BOXES_QUANTITY,
+    MortyPathMap,
 } from '../../constants/constants';
-import {getKeyByValue, isPositiveInteger} from '../../utils/helpers';
+import { getKeyByValue, isPositiveInteger } from '../../utils/helpers';
 
 export class GameCliArgsParser {
     public static parse(): GameStartArguments {

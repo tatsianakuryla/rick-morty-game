@@ -1,3 +1,4 @@
-import { GameCliArgsParser } from './cli/GameCliArgsParser/GameCliArgsParser';
+import { Game } from './core/Game/Game';
 
-GameCliArgsParser.parse();
+const game = new Game();
+game.init();

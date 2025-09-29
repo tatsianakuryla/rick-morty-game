@@ -1,5 +1,5 @@
-import { type ArgumentErrors, Speaker } from '../arguments.types';
-import { DetailedError, GameMessages } from '../constants';
+import { type ArgumentErrors, Speaker } from './arguments.types';
+import { DetailedError, GameMessages } from '../cli/constants';
 
 export class Messenger {
     public static showError(errorType: ArgumentErrors = 'default'): void {
