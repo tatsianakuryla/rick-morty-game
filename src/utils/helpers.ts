@@ -2,6 +2,9 @@ export function isPositiveInteger(value: string): boolean {
     return /^\d+$/.test(value);
 }
 
-export function getKeyByValue(map: Map<string, string>, value: string): string | undefined {
-    return [...map.entries()].find(([, v]) => v === value)?.[0];
+export function getKeyByValue<T extends Record<string, string>>(
+    obj: T,
+    value: T[keyof T],
+): keyof T | undefined {
+    return Object.keys(obj).find((k) => obj[k] === value);
 }

@@ -1,13 +1,20 @@
 import type { GameStartArguments } from '../../types';
+import type { MortyType } from '../../morties/mortyRegistry';
 
 export class GameState {
-    private readonly _gameStartArguments: GameStartArguments;
+    private readonly _boxCount: number;
+    private readonly _mortyType: MortyType;
 
     constructor(gameStartArguments: GameStartArguments) {
-        this._gameStartArguments = gameStartArguments;
+        this._boxCount = gameStartArguments.boxCount;
+        this._mortyType = gameStartArguments.mortyType;
     }
 
-    public get gameStartArguments(): GameStartArguments {
-        return this._gameStartArguments;
+    public get boxCount(): number {
+        return this._boxCount;
+    }
+
+    public get mortyType(): MortyType {
+        return this._mortyType;
     }
 }
