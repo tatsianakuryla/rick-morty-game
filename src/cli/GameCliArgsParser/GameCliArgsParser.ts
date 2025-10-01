@@ -1,8 +1,8 @@
-import { Messenger } from '../../components/Messager/Messenger';
+import { Messenger } from '../../components/Messenger/Messenger';
 import { type GameConfig } from '../../types';
 import { MAX_BOXES_QUANTITY, MIN_BOXES_QUANTITY } from '../../constants/constants';
 import { getKeyByValue, isPositiveInteger } from '../../utils/helpers';
-import type { ArgumentErrors } from '../../components/Messager/messanger.type';
+import type { ArgumentErrors } from '../../components/Messenger/messenger.type';
 import {
     AllowedMortyPaths,
     type MortyPath,
@@ -14,7 +14,6 @@ export class GameCliArgsParser {
     public static parse(): GameConfig {
         const boxCount = this.getBoxCount();
         const mortyType = this.getMortyType();
-        this.success(boxCount);
         return { boxCount, mortyType };
     }
 
@@ -55,10 +54,6 @@ export class GameCliArgsParser {
 
     private static isValidMortyFilePath(path: string): path is MortyPath {
         return AllowedMortyPaths.has(path);
-    }
-
-    private static success(boxCount: number): void {
-        Messenger.showStartMessage(boxCount);
     }
 
     private static exitWithError(errorType: ArgumentErrors): never {
