@@ -27,3 +27,7 @@ export function isAbortError(value: unknown): value is { code?: unknown; name?: 
         (hasName(value) && value.name === 'AbortError')
     );
 }
+
+export function roundToThreeDecPlaces(value: number): string {
+    return value.toFixed(3);
+}

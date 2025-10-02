@@ -1,5 +1,5 @@
-import type { GameConfig } from '../../shared/types';
-import { GameStatistics } from '../GameStatistics/GameStatistics';
+import type { GameConfig } from '../../shared/types/types';
+import { GameStatistics } from '../statistics/GameStatistics/GameStatistics';
 import type { Morty } from '../morty/Morty/Morty';
 import { MortyFactories } from '../morty/mortyRegistry';
 import { GameMessages } from '../../adapters/Messenger/constants';

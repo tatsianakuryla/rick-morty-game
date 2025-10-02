@@ -1,5 +1,5 @@
 import { Messenger } from '../../adapters/Messenger/Messenger';
-import { type GameConfig } from '../../shared/types';
+import { type GameConfig } from '../../shared/types/types';
 import { MAX_BOXES_QUANTITY, MIN_BOXES_QUANTITY } from '../../shared/constants/constants';
 import { getKeyByValue, isNotNegativeInteger } from '../../shared/utils/helpers';
 import type { ArgumentErrors } from '../../adapters/Messenger/messenger.type';
