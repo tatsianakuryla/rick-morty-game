@@ -1,14 +1,14 @@
-import { Messenger } from '../../components/Messenger/Messenger';
-import { type GameConfig } from '../../types';
-import { MAX_BOXES_QUANTITY, MIN_BOXES_QUANTITY } from '../../constants/constants';
-import { getKeyByValue, isPositiveInteger } from '../../utils/helpers';
-import type { ArgumentErrors } from '../../components/Messenger/messenger.type';
+import { Messenger } from '../../adapters/Messenger/Messenger';
+import { type GameConfig } from '../../shared/types';
+import { MAX_BOXES_QUANTITY, MIN_BOXES_QUANTITY } from '../../shared/constants/constants';
+import { getKeyByValue, isNotNegativeInteger } from '../../shared/utils/helpers';
+import type { ArgumentErrors } from '../../adapters/Messenger/messenger.type';
 import {
     AllowedMortyPaths,
     type MortyPath,
     MortyPaths,
     type MortyType,
-} from '../../morties/mortyRegistry';
+} from '../../core/morty/mortyRegistry';
 
 export class GameCliArgsParser {
     public static parse(): GameConfig {
@@ -24,7 +24,7 @@ export class GameCliArgsParser {
     }
 
     private static parseBoxCount(boxesInput: string): number {
-        if (!isPositiveInteger(boxesInput)) this.exitWithError('boxesWrongFormat');
+        if (!isNotNegativeInteger(boxesInput)) this.exitWithError('boxesWrongFormat');
         const boxCount = Number.parseInt(boxesInput, 10);
         if (
             !Number.isSafeInteger(boxCount) ||

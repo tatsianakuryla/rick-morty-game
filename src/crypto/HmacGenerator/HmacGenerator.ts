@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import { CliErrors } from '../components/Messenger/constants';
+import { CliErrors } from '../../adapters/Messenger/constants';
 
 export class HmacGenerator {
     public static getHMAC(value: number, key: string | Buffer | Uint8Array): string {

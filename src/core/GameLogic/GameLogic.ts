@@ -1,17 +1,17 @@
-import type { GameConfig } from '../../types';
+import type { GameConfig } from '../../shared/types';
 import { GameState } from '../GameState/GameState';
-import type { Morty } from '../../morties/Morty/Morty';
-import { MortyFactories } from '../../morties/mortyRegistry';
-import { GameMessages } from '../../components/Messenger/constants';
-import { MortyRandomizer } from '../../MortyRandomizer/MortyRandomizer';
-import { HmacGenerator } from '../../HmacGenerator/HmacGenerator';
-import { isPositiveInteger, trimToLowerCase } from '../../utils/helpers';
+import type { Morty } from '../morty/Morty/Morty';
+import { MortyFactories } from '../morty/mortyRegistry';
+import { GameMessages } from '../../adapters/Messenger/constants';
+import { MortyRandomizer } from '../../crypto/MortyRandomizer/MortyRandomizer';
+import { HmacGenerator } from '../../crypto/HmacGenerator/HmacGenerator';
+import { isPositiveInteger, trimToLowerCase } from '../../shared/utils/helpers';
 import {
     EXCHANGE_AGREE_ANSWER,
     KEEP_BOX_ANSWER,
     NUM_UNSET,
     STR_UNSET,
-} from '../../constants/constants';
+} from '../../shared/constants/constants';
 import type { ExchangeResult } from './gameLogic.type';
 
 export class GameLogic {

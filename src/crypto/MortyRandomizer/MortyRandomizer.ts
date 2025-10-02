@@ -1,5 +1,5 @@
 import { randomBytes, randomInt } from 'node:crypto';
-import { CliErrors } from '../components/Messenger/constants';
+import { CliErrors } from '../../adapters/Messenger/constants';
 
 export class MortyRandomizer {
     public static getOneTimeKey(): string {

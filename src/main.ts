@@ -1,7 +1,6 @@
 import { GameLogic } from './core/GameLogic/GameLogic';
 import { GameCliArgsParser } from './cli/GameCliArgsParser/GameCliArgsParser';
-import type { GameConfig } from './types';
-import { MortyRandomizer } from './MortyRandomizer/MortyRandomizer';
+import type { GameConfig } from './shared/types';
 
 const gameConfig: GameConfig = GameCliArgsParser.parse();
 export const gameLogic = new GameLogic(gameConfig);

@@ -1,37 +1,34 @@
-import { gameLogic } from '../../main';
-import { Messenger, readLine } from '../../components/Messenger/Messenger';
-import { GameMessages } from '../../components/Messenger/constants';
-import { Speaker } from '../../components/Messenger/messenger.type';
+import { gameLogic } from '../../../main';
+import { Messenger, readLine } from '../../../adapters/Messenger/Messenger';
+import { GameMessages } from '../../../adapters/Messenger/constants';
+import { Speaker } from '../../../adapters/Messenger/messenger.type';
+import { isAbortError } from '../../../shared/utils/helpers';
 
 export abstract class Morty {
     private readonly RICK_PROMPT = `${Speaker.Rick}: `;
 
     public async startRound(): Promise<void> {
-        gameLogic.resetValues();
         gameLogic.initFirstCommitment();
         this.showRoundIntro();
         if (!(await this.promptRick(this.handleRickOffset1))) return;
     }
 
-    protected async promptRick(
-        validate: (answer: string) => void | Promise<void>,
-    ): Promise<boolean> {
+    protected async promptRick(validate: (answer: string) => Promise<void>): Promise<boolean> {
         try {
             const answer = await readLine!.question(this.RICK_PROMPT);
             if (this.isExit(answer)) {
-                console.log();
                 this.exit();
                 return false;
             }
-            await validate.call(this, answer);
+            await validate(answer);
             return true;
-        } catch (err: any) {
-            if (err?.code === 'ABORT_ERR' || err?.name === 'AbortError') {
+        } catch (error: unknown) {
+            if (isAbortError(error)) {
                 console.log();
                 this.exit();
                 return false;
             }
-            throw err;
+            throw error;
         }
     }
 
@@ -42,24 +39,25 @@ export abstract class Morty {
         if (!(await this.promptRick(this.handleRickInitialChoice))) return;
     }
 
-    protected async handleRickOffset1(answer: string): Promise<void> {
+    protected handleRickOffset1 = async (answer: string): Promise<void> => {
         if (!gameLogic.isValidRickInputValue(answer, gameLogic.config.boxCount)) {
             Messenger.showMessage(GameMessages.wrongValue(gameLogic.config.boxCount));
             await this.promptRick(this.handleRickOffset1);
             return;
         }
         await this.hideGun(Number(answer));
-    }
+    };
 
-    protected async handleRickInitialChoice(answer: string): Promise<void> {
+    protected handleRickInitialChoice = async (answer: string): Promise<void> => {
         if (!gameLogic.isValidRickInputValue(answer, gameLogic.config.boxCount)) {
             Messenger.showMessage(GameMessages.wrongValue(gameLogic.config.boxCount));
             await this.promptRick(this.handleRickInitialChoice);
             return;
         }
         gameLogic.setRickChoice(Number(answer));
+        gameLogic.setInitialRickChoice(Number(answer));
         await this.initSecondCommitmentAndPrompt();
-    }
+    };
 
     protected async initSecondCommitmentAndPrompt(): Promise<void> {
         gameLogic.initSecondCommitment();
@@ -77,10 +75,10 @@ export abstract class Morty {
 
     protected async askForExchange(): Promise<void> {
         Messenger.showMessage(GameMessages.askForExchange());
-        if (!(await this.promptRick(this.validateExchangeResponse))) return;
+        if (!(await this.promptRick(this.validateSwitchResponse))) return;
     }
 
-    protected async handleRickOffset2(answer: string): Promise<void> {
+    protected handleRickOffset2 = async (answer: string): Promise<void> => {
         if (!gameLogic.isValidRickInputValue(answer, gameLogic.config.boxCount - 1)) {
             Messenger.showMessage(GameMessages.wrongValue(gameLogic.config.boxCount - 1));
             await this.promptRick(this.handleRickOffset2);
@@ -88,7 +86,7 @@ export abstract class Morty {
         }
         this.finalizeSecondStage(answer);
         await this.askForExchange();
-    }
+    };
 
     protected finalizeSecondStage(answer: string): void {
         gameLogic.setRickOffset2(Number(answer));
@@ -98,16 +96,19 @@ export abstract class Morty {
         );
     }
 
-    protected async validateExchangeResponse(answer: string) {
+    protected validateSwitchResponse = async (answer: string) => {
         const decision = gameLogic.parseExchange(answer);
-        if (!decision) {
+        if (decision === null) {
             Messenger.showMessage(GameMessages.wrongExchangeValue);
-            await this.promptRick(this.validateExchangeResponse);
+            await this.promptRick(this.validateSwitchResponse);
             return;
         }
-        if (decision === 'swap') gameLogic.setRickChoice(gameLogic.secondCandidateBox);
+        gameLogic.setSwitchResponse(decision);
+        if (decision) {
+            gameLogic.setRickChoice(gameLogic.secondCandidateBox);
+        }
         await this.showFinalOutcome();
-    }
+    };
 
     protected async showFinalOutcome(): Promise<void> {
         Messenger.showMessage(GameMessages.exchangeApprove(gameLogic.rickChoice));
@@ -117,36 +118,36 @@ export abstract class Morty {
         } else {
             Messenger.showMessage(GameMessages.lostInfo);
         }
+        gameLogic.finishRound();
         Messenger.showMessage(GameMessages.askToStartNextRound);
         if (!(await this.promptRick(this.handlePlayAgainDecision))) return;
     }
 
-    protected async handlePlayAgainDecision(answer: string) {
+    protected handlePlayAgainDecision = async (answer: string) => {
         const decision = gameLogic.parseYesNo(answer);
         if (decision === null) {
             Messenger.showMessage(GameMessages.invalidNextRoundResponse);
             await this.promptRick(this.handlePlayAgainDecision);
             return;
-        }
-        if (decision === false) {
+        } else if (!decision) {
             this.exit();
             return;
         }
         await gameLogic.start();
-    }
+    };
 
     protected revealCommitments(): void {
         this.revealFirstCommitment();
-        this.revealSecondCommitment();
-        if (!gameLogic.needsSecondStage(gameLogic.rickChoice, gameLogic.gunBox)) {
+        if (gameLogic.needsSecondStage(gameLogic.initialRickChoice, gameLogic.gunBox)) {
+            this.revealSecondCommitment();
+        } else {
             Messenger.showMessage(GameMessages.secondCommitmentNotUsed);
-            Messenger.showMessage(GameMessages.finalBoxNumber(gameLogic.secondCandidateBox));
         }
     }
 
     protected showRoundIntro(): void {
         Messenger.open();
-        Messenger.showMessage(`Round: ${gameLogic.state.currentRound}`);
+        Messenger.showMessage(`Round: ${gameLogic.currentRound}`);
         Messenger.showMessage(GameMessages.start(gameLogic.config.boxCount));
         Messenger.showMessage(gameLogic.getFirstHmac());
         Messenger.showMessage(GameMessages.askRickEnterValueForRandom(gameLogic.config.boxCount));
@@ -163,9 +164,7 @@ export abstract class Morty {
         Messenger.showMessage(gameLogic.getSecondSecretInfo());
         Messenger.showMessage(gameLogic.getSecondKeyInfo());
         Messenger.showMessage(gameLogic.getSecondRandomResultInfo());
-        if (gameLogic.needsSecondStage(gameLogic.rickChoice, gameLogic.gunBox)) {
-            Messenger.showMessage(GameMessages.finalBoxNumber(gameLogic.secondCandidateBox));
-        }
+        Messenger.showMessage(GameMessages.finalBoxNumber(gameLogic.secondCandidateBox));
     }
 
     protected isExit(input: string): boolean {
@@ -173,7 +172,7 @@ export abstract class Morty {
     }
 
     protected exit(): void {
-        gameLogic.resetValues();
+        gameLogic.endGame();
         Messenger.showMessage(GameMessages.exitGame);
         Messenger.close();
     }

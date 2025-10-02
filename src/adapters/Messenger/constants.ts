@@ -3,7 +3,7 @@ import {
     KEEP_BOX_ANSWER,
     MAX_BOXES_QUANTITY,
     MIN_BOXES_QUANTITY,
-} from '../../constants/constants';
+} from '../../shared/constants/constants';
 
 export const USAGE_HELP = [
     'Usage:',

@@ -1,1 +1,1 @@
-export type ExchangeResult = 'swap' | 'keep' | null;
+export type SwitchResponse = boolean | null;

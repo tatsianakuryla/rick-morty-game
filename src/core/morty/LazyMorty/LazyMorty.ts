@@ -1,6 +1,6 @@
-import { Messenger } from '../../components/Messenger/Messenger';
-import { GameMessages } from '../../components/Messenger/constants';
-import { gameLogic } from '../../main';
+import { Messenger } from '../../../adapters/Messenger/Messenger';
+import { GameMessages } from '../../../adapters/Messenger/constants';
+import { gameLogic } from '../../../main';
 import { Morty } from '../Morty/Morty';
 
 export class LazyMorty extends Morty {
@@ -8,7 +8,10 @@ export class LazyMorty extends Morty {
         if (gameLogic.rickChoice !== gameLogic.gunBox) {
             gameLogic.setSecondCandidateBox(gameLogic.gunBox);
         } else {
-            const second = gameLogic.pickLowestCandidate(gameLogic.rickChoice);
+            const second = gameLogic.pickLowestCandidate(
+                gameLogic.config.boxCount,
+                gameLogic.rickChoice,
+            );
             gameLogic.setSecondCandidateBox(second);
         }
         Messenger.showMessage(

@@ -1,6 +1,6 @@
 import { CliErrors } from './constants';
 import { type ArgumentErrors, Speaker } from './messenger.type';
-import { createInterface, Interface } from 'node:readline/promises';
+import { createInterface, type Interface } from 'node:readline/promises';
 import process from 'node:process';
 
 export let readLine: Interface | null = null;

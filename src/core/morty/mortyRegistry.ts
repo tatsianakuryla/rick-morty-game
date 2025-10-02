@@ -1,6 +1,6 @@
 import { ClassicMorty } from './ClassicMorty/ClassicMorty';
 import { LazyMorty } from './LazyMorty/LazyMorty';
-import type { MortyFactory } from '../types';
+import type { MortyFactory } from '../../shared/types';
 
 export const MortyFactories = {
     classic: () => new ClassicMorty(),
