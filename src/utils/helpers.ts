@@ -8,3 +8,7 @@ export function getKeyByValue<T extends Record<string, string>>(
 ): keyof T | undefined {
     return Object.keys(obj).find((k) => obj[k] === value);
 }
+
+export function trimToLowerCase(str: string): string {
+    return str.trim().toLowerCase();
+}
