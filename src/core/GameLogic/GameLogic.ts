@@ -1,22 +1,24 @@
 import type { GameConfig } from '../../shared/types';
-import { GameState } from '../GameState/GameState';
+import { GameStatistics } from '../GameStatistics/GameStatistics';
 import type { Morty } from '../morty/Morty/Morty';
 import { MortyFactories } from '../morty/mortyRegistry';
 import { GameMessages } from '../../adapters/Messenger/constants';
 import { MortyRandomizer } from '../../crypto/MortyRandomizer/MortyRandomizer';
 import { HmacGenerator } from '../../crypto/HmacGenerator/HmacGenerator';
-import { isPositiveInteger, trimToLowerCase } from '../../shared/utils/helpers';
+import { isNotNegativeInteger, trimToLowerCase } from '../../shared/utils/helpers';
 import {
+    BOOL_UNSET,
     EXCHANGE_AGREE_ANSWER,
     KEEP_BOX_ANSWER,
     NUM_UNSET,
+    ROUND_UNSET,
     STR_UNSET,
 } from '../../shared/constants/constants';
-import type { ExchangeResult } from './gameLogic.type';
+import type { SwitchResponse } from './gameLogic.type';
 
 export class GameLogic {
     public config: GameConfig;
-    public state: GameState;
+    private _state: GameStatistics;
     private _morty: Morty;
     private _hmacKey1: string = STR_UNSET;
     private _hmacKey2: string = STR_UNSET;
@@ -27,11 +29,14 @@ export class GameLogic {
     private _secondCandidateBox: number = NUM_UNSET;
     private _gunBox: number = NUM_UNSET;
     private _rickChoice: number = NUM_UNSET;
+    private _initialRickChoice: number = NUM_UNSET;
+    private _currentRound: number = ROUND_UNSET;
+    private _switchResponse: SwitchResponse = BOOL_UNSET;
 
     constructor(config: GameConfig) {
         this.config = config;
         this._morty = MortyFactories[config.mortyType]();
-        this.state = new GameState();
+        this._state = new GameStatistics();
     }
 
     public get rickChoice(): number {
@@ -46,8 +51,16 @@ export class GameLogic {
         return this._gunBox;
     }
 
+    public get currentRound(): number {
+        return this._currentRound;
+    }
+
+    public get initialRickChoice(): number {
+        return this._initialRickChoice;
+    }
+
     public async start(): Promise<void> {
-        this.state.currentRound++;
+        this._currentRound++;
         await this._morty.startRound();
     }
 
@@ -85,8 +98,16 @@ export class GameLogic {
         this._rickChoice = value;
     }
 
+    public setInitialRickChoice(value: number): void {
+        this._initialRickChoice = value;
+    }
+
     public setSecondCandidateBox(value: number): void {
         this._secondCandidateBox = value;
+    }
+
+    public setSwitchResponse(value: SwitchResponse): void {
+        this._switchResponse = value;
     }
 
     public selectSecondCandidateBox(): void {
@@ -104,15 +125,14 @@ export class GameLogic {
     }
 
     public isValidRickInputValue(value: string, limit: number): boolean {
-        if (!isPositiveInteger(value)) return false;
+        if (!isNotNegativeInteger(value)) return false;
         const num = Number(value);
         return num >= 0 && num < limit;
     }
 
-    public parseExchange(input: string): ExchangeResult {
-        const num = Number(input);
-        if (num === EXCHANGE_AGREE_ANSWER) return 'swap';
-        if (num === KEEP_BOX_ANSWER) return 'keep';
+    public parseExchange(input: string): SwitchResponse {
+        if (input.trim() === EXCHANGE_AGREE_ANSWER) return true;
+        if (input.trim() === KEEP_BOX_ANSWER) return false;
         return null;
     }
 
@@ -155,7 +175,7 @@ export class GameLogic {
             this._rickOffset2,
             this._mortySecret2,
             this.config.boxCount - 1,
-            this.getSecondNumber(this.config.boxCount - 1),
+            this.getSecondIndex(this.config.boxCount - 1),
         );
     }
 
@@ -163,8 +183,19 @@ export class GameLogic {
         return rickChoice === gunBox;
     }
 
-    public pickLowestCandidate(exclude: number): number {
-        return exclude === 0 ? 1 : 0;
+    public pickLowestCandidate(boxCount: number, exclude: number): number {
+        for (let i = 0; i < boxCount; i++) if (i !== exclude) return i;
+        throw new Error('No candidate found');
+    }
+
+    public finishRound(): void {
+        this._state.accumulateRoundResults(
+            this.currentRound,
+            this.config.boxCount,
+            this._switchResponse,
+            this.isWon(),
+        );
+        this.resetValues();
     }
 
     public resetValues(): void {
@@ -177,6 +208,14 @@ export class GameLogic {
         this._rickChoice = NUM_UNSET;
         this._rickOffset1 = NUM_UNSET;
         this._rickOffset2 = NUM_UNSET;
+        this._switchResponse = BOOL_UNSET;
+        this._initialRickChoice = NUM_UNSET;
+    }
+
+    public endGame(): void {
+        this._state.printSummary();
+        this.resetValues();
+        this._currentRound = ROUND_UNSET;
     }
 
     private generateOneTimeKey(): string {
@@ -187,7 +226,7 @@ export class GameLogic {
         return MortyRandomizer.getSecureInteger(max);
     }
 
-    private getSecondNumber(length: number): number {
+    private getSecondIndex(length: number): number {
         return (this._mortySecret2 + this._rickOffset2) % length;
     }
 
@@ -200,7 +239,7 @@ export class GameLogic {
     }
 
     private pickByCommit(candidates: number[]): number {
-        const index = this.getSecondNumber(candidates.length);
+        const index = this.getSecondIndex(candidates.length);
         const picked = candidates[index];
         if (picked === undefined) throw new Error('Candidate index out of bounds');
         return picked;

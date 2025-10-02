@@ -1,11 +1,5 @@
 import type { SwitchResponse } from '../GameLogic/gameLogic.type';
-
-export interface RoundSummary {
-    round: number;
-    boxCount: number;
-    switched: SwitchResponse;
-    win: boolean;
-}
+import type { RoundSummary } from './gameStatistics.type';
 
 export class GameStatistics {
     private rounds: RoundSummary[] = [];
