@@ -13,10 +13,13 @@ export abstract class Morty {
         if (!(await this.promptRick(this.handleRickOffset1))) return;
     }
 
-    protected async promptRick(validate: (answer: string) => void | Promise<void>): Promise<boolean> {
+    protected async promptRick(
+        validate: (answer: string) => void | Promise<void>,
+    ): Promise<boolean> {
         try {
             const answer = await readLine!.question(this.RICK_PROMPT);
             if (this.isExit(answer)) {
+                console.log();
                 this.exit();
                 return false;
             }
@@ -24,6 +27,7 @@ export abstract class Morty {
             return true;
         } catch (err: any) {
             if (err?.code === 'ABORT_ERR' || err?.name === 'AbortError') {
+                console.log();
                 this.exit();
                 return false;
             }

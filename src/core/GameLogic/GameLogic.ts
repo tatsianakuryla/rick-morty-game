@@ -16,8 +16,8 @@ import type { ExchangeResult } from './gameLogic.type';
 
 export class GameLogic {
     public config: GameConfig;
-    private morty: Morty;
     public state: GameState;
+    private _morty: Morty;
     private _hmacKey1: string = STR_UNSET;
     private _hmacKey2: string = STR_UNSET;
     private _mortySecret1: number = NUM_UNSET;
@@ -30,7 +30,7 @@ export class GameLogic {
 
     constructor(config: GameConfig) {
         this.config = config;
-        this.morty = MortyFactories[config.mortyType]();
+        this._morty = MortyFactories[config.mortyType]();
         this.state = new GameState();
     }
 
@@ -48,7 +48,7 @@ export class GameLogic {
 
     public async start(): Promise<void> {
         this.state.currentRound++;
-        await this.morty.startRound();
+        await this._morty.startRound();
     }
 
     public initFirstCommitment(): void {
@@ -59,14 +59,6 @@ export class GameLogic {
     public initSecondCommitment(): void {
         this._hmacKey2 = this.generateOneTimeKey();
         this._mortySecret2 = this.generateMortyRandomValue(this.config.boxCount - 1);
-    }
-
-    public generateOneTimeKey(): string {
-        return MortyRandomizer.getOneTimeKey();
-    }
-
-    public generateMortyRandomValue(max: number): number {
-        return MortyRandomizer.getSecureInteger(max);
     }
 
     public getFirstHmac(): string {
@@ -93,8 +85,8 @@ export class GameLogic {
         this._rickChoice = value;
     }
 
-    public getSecondNumber(length: number): number {
-        return (this._mortySecret2 + this._rickOffset2) % length;
+    public setSecondCandidateBox(value: number): void {
+        this._secondCandidateBox = value;
     }
 
     public selectSecondCandidateBox(): void {
@@ -129,36 +121,6 @@ export class GameLogic {
         if (value === 'y' || value === 'yes') return true;
         if (value === 'n' || value === 'no') return false;
         return null;
-    }
-
-    private generateHmac(secret: number, key: string): string {
-        return HmacGenerator.getHMAC(secret, key);
-    }
-
-    public needsSecondStage(rickChoice: number, gunBox: number): boolean {
-        return rickChoice === gunBox;
-    }
-
-    private buildCandidates(boxCount: number, exclude: number): number[] {
-        return Array.from({ length: boxCount }, (_, i) => i).filter((i) => i !== exclude);
-    }
-
-    private pickByCommit(candidates: number[]): number {
-        if (candidates.length === 0) throw new Error('No candidates to pick from');
-        const index = this.getSecondNumber(candidates.length);
-        const picked = candidates[index];
-        if (picked === undefined) throw new Error('Candidate index out of bounds');
-        return picked;
-    }
-
-    private getRandomResultInfo(
-        resultNumber: 1 | 2,
-        rickOffset: number,
-        secret: number,
-        boxCount: number,
-        result: number,
-    ): string {
-        return GameMessages.randomResultInfo(resultNumber, rickOffset, secret, boxCount, result);
     }
 
     public getFirstSecretInfo(): string {
@@ -197,6 +159,14 @@ export class GameLogic {
         );
     }
 
+    public needsSecondStage(rickChoice: number, gunBox: number): boolean {
+        return rickChoice === gunBox;
+    }
+
+    public pickLowestCandidate(exclude: number): number {
+        return exclude === 0 ? 1 : 0;
+    }
+
     public resetValues(): void {
         this._hmacKey1 = STR_UNSET;
         this._hmacKey2 = STR_UNSET;
@@ -207,5 +177,42 @@ export class GameLogic {
         this._rickChoice = NUM_UNSET;
         this._rickOffset1 = NUM_UNSET;
         this._rickOffset2 = NUM_UNSET;
+    }
+
+    private generateOneTimeKey(): string {
+        return MortyRandomizer.getOneTimeKey();
+    }
+
+    private generateMortyRandomValue(max: number): number {
+        return MortyRandomizer.getSecureInteger(max);
+    }
+
+    private getSecondNumber(length: number): number {
+        return (this._mortySecret2 + this._rickOffset2) % length;
+    }
+
+    private generateHmac(secret: number, key: string): string {
+        return HmacGenerator.getHMAC(secret, key);
+    }
+
+    private buildCandidates(boxCount: number, exclude: number): number[] {
+        return Array.from({ length: boxCount }, (_, i) => i).filter((i) => i !== exclude);
+    }
+
+    private pickByCommit(candidates: number[]): number {
+        const index = this.getSecondNumber(candidates.length);
+        const picked = candidates[index];
+        if (picked === undefined) throw new Error('Candidate index out of bounds');
+        return picked;
+    }
+
+    private getRandomResultInfo(
+        resultNumber: 1 | 2,
+        rickOffset: number,
+        secret: number,
+        boxCount: number,
+        result: number,
+    ): string {
+        return GameMessages.randomResultInfo(resultNumber, rickOffset, secret, boxCount, result);
     }
 }

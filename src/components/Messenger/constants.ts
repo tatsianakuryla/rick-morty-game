@@ -83,4 +83,6 @@ export const GameMessages = {
 
     secondCommitmentNotUsed:
         'The second commitment was not used because your initial choice did not match the gun. The second box was set to the gun automatically.',
+
+    secondCommitmentNotUsedLazy: 'The second commitment was not used.',
 } as const;
