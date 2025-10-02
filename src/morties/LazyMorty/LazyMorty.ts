@@ -1,7 +1,3 @@
-import type { Morty } from '../Morty/Morty';
+import { Morty } from '../Morty/Morty';
 
-export class LazyMorty implements Morty {
-    constructor() {
-        console.log('It is LazyMorty');
-    }
-}
+export class LazyMorty extends Morty {}
