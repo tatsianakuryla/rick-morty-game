@@ -88,7 +88,7 @@ After the game is complete, you see a result table:
 | P (estimate)   |  `w₁ / n₁`    |  `w₂ / n₂`  |
 | P (exact)      |   `(N-1)/N`   |     `1/N`   |
 
-- **P (estimate)** — empirical win rate from played rounds (shows `0.000` if no rounds of that type were played).
+- **P (estimate)** — empirical win rate from played rounds (shows `-` if no rounds of that type were played).
 - **P (exact)** — theoretical probabilities for the current **N**.
 
 ---
