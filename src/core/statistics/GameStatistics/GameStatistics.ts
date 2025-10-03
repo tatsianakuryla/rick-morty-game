@@ -5,7 +5,7 @@ import { Table } from '../TableGenerator/Table';
 import { gameLogic } from '../../../main';
 
 export class GameStatistics {
-    private readonly ESTIMATE_DEFAULT = '0.000';
+    private readonly ESTIMATE_DEFAULT = '-';
     private rounds: RoundSummary[] = [];
 
     public accumulateRoundResults(
